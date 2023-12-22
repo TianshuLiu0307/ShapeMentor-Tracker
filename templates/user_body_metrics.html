@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <a href="https://sc5154.wixsite.com/mysite" class="btn btn-secondary mb-3">Back</a>
+
+        <h3>Add New Metric</h3>
+        <form method="POST" action="/users/{{ user.user_id }}/metrics/add">
+            <div class="form-group">
+                <label for="metric_index">Metric Name:</label>
+                <select class="form-control" id="metricSelect" name="metric_index">
+                    <option type="number" step="1" value="1">weight</option>
+                    <option type="number" step="1" value="2">height</option>
+                    <option type="number" step="1" value="3">body fat</option>
+                    <option type="number" step="1" value="4">heart rate</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="value">Value:</label>
+                <input type="number" step="0.01" class="form-control" id="value" name="value" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <h3>Body Metrics History</h3>
+        <table class="table" id="bodyMetricsTable">
+            <thead>
+                <tr>
+                    <th>Metric Name</th>
+                    <th>Time</th>
+                    <th>Value</th>
+                    <th>Metric Unit</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in body_metrics %}
+                <tr>
+                    <td>{{ record.metric_name }}</td>
+                    <td>{{ record.timestamp }}</td>
+                    <td>{{ record.value }}</td>
+                    <td>{{ record.metric_unit }}</td>
+                    <td>
+                        <form action="/users/{{ user.user_id }}/metrics/request_delete" method="POST">
+                            <input type="hidden" id="delete_timestamp" name="delete_timestamp" value="{{ record.timestamp }}">
+                            <input type="hidden" id="delete_metric_index" name="delete_metric_index" value="{{ record.metric_index }}">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#bodyMetricsTable').DataTable({
+            "paging": false,
+            "ordering": true,
+            "searching": false,
+            "order": [[1, 'desc']]
+        });
+
+        const editButton = document.getElementById("editButton");
+        const editForm = document.getElementById("editForm");
+        const confirmButton = document.getElementById("confirmButton");
+
+        function isValidEmail(email) {
+            const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+            return regex.test(email);
+        }
+
+        function checkRequiredFieldsAndEmail() {
+            const userName = document.getElementById('new_user_name').value.trim();
+            const userEmail = document.getElementById('new_email').value.trim();
+            confirmButton.disabled = !(userName && isValidEmail(userEmail));
+        }
+
+        editButton.addEventListener("click", () => {
+            editForm.style.display = "block";
+            checkRequiredFieldsAndEmail();
+        });
+
+        const formFields = editForm.querySelectorAll("input");
+        formFields.forEach((field) => {
+            field.addEventListener("input", checkRequiredFieldsAndEmail);
+        });
+
+        confirmButton.addEventListener("click", () => {
+            if (!confirmButton.disabled) {
+                editForm.submit();
+            }
+        });
+    });
+</script>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
